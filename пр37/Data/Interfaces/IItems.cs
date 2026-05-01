@@ -3,6 +3,6 @@ namespace пр37.Data.Interfaces
 {
     public interface IItems
     {
-        public IEnumerable<IItems> AllItems {  get; }
+        IEnumerable<Items> AllItems { get; }
     }
 }

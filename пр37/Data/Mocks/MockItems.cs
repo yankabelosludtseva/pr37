@@ -1,6 +1,5 @@
 ﻿using пр37.Data.Interfaces;
 using пр37.Data.Models;
-
 namespace пр37.Data.Mocks
 {
     public class MockItems : IItems
