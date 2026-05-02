@@ -2,6 +2,7 @@
 using Shop_Belosludtseva.Data.Mocks;
 
 var builder = WebApplication.CreateBuilder(args);
+
 builder.Services.AddMvc(option => option.EnableEndpointRouting = false);
 
 
