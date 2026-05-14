@@ -1,69 +1,124 @@
 ﻿@using Shop_Belosludtseva.Data.ViewModell
-
 @model VMItems
 
 @{
     Layout = "_Layout";
+    ViewBag.Title = "Все предметы";
 }
 
-<div>
-    <select onChange="SelectCategory(this)">
+<!-- Счётчик корзины -->
+<div class="basket-counter">
+    🛒 Корзина: <span id="basket-count">0</span>
+</div>
+
+<!-- Фильтр по категориям -->
+<div class="category-filter">
+    <select id="category-select" onchange="SelectCategory(this)">
         <option value="0">Выбрать ...</option>
-        @foreach (var Category in Model.Categories)
+        @foreach (var category in Model.Categories)
         {
-            if (Category.Id == Model.SelectCategory)
-            {
-                <option selected="selected" value="@Category.Id">@Category.Name</option>
-            }
-            else
-            {
-                <option value="@Category.Id">@Category.Name</option>
-            }
+            var selected = category.Id == Model.SelectCategory ? "selected" : "";
+            <option value="@category.Id" @selected>@category.Name</option>
         }
     </select>
-    <script>
-        function SelectCategory(sender) {
-            window.location = "/Items/List?id=" + sender.value;
-        }
-    </script>
 </div>
 
 <h2>Все предметы</h2>
 
-@foreach (var item in Model.Items)
-{
-    // Показываем только товары выбранной категории или все, если категория не выбрана
-    if (item.Category.Id == Model.SelectCategory || Model.SelectCategory == 0)
+<!-- Список товаров -->
+<div class="items-list">
+    @foreach (var item in Model.Items)
     {
-        <div class="item" style="border: 1px solid #ddd; padding: 15px; margin: 10px 0; border-radius: 5px;">
-            <img src="@item.Img" alt="@item.Name" style="max-width: 200px; display: block; margin-bottom: 10px;" />
+        // Показываем только товары выбранной категории или все, если категория не выбрана
+        if (item.Category?.Id == Model.SelectCategory || Model.SelectCategory == 0)
+        {
+            <div class="item-card">
+                <img src="@item.Img" alt="@item.Name" class="item-image" />
 
-            <div class="data">
-                <h3>Модель: @item.Name</h3>
-                <div>Цена: @item.Price.ToString("c")</div>
-                <div>Категория: @item.Category.Name</div>
-                <div>Описание: @item.Description</div>
+                <div class="item-data">
+                    <h3 class="item-name">Модель: @item.Name</h3>
+                    <div class="item-price">Цена: @item.Price ₽</div>
+                    <div class="item-category">Категория: @item.Category?.Name</div>
+                    <div class="item-description">Описание: @item.Description</div>
+                </div>
+
+                <div class="item-actions">
+                    <button type="button"
+                            class="basket btn-basket"
+                            data-id="@item.Id"
+                            data-name="@item.Name"
+                            data-price="@item.Price">
+                        В корзину
+                    </button>
+
+                    <a href="/Items/Update?id=@item.Id" class="btn-edit">
+                        Изменить
+                    </a>
+
+                    <a href="/Items/Delete?id=@item.Id"
+                       class="btn-delete"
+                       onclick="return confirm('Вы уверены, что хотите удалить предмет «@item.Name»?');">
+                        Удалить
+                    </a>
+                </div>
             </div>
-
-            <!-- ✅ Кнопки управления -->
-            <div class="actions" style="margin-top: 15px;">
-                <a href="/Items/Update?id=@item.Id"
-                   class="btn-edit"
-                   style="display: inline-block; padding: 8px 16px; margin-right: 10px;
-                                  background-color: #007bff; color: white; text-decoration: none;
-                                  border-radius: 4px; font-size: 14px;">
-                    Изменить
-                </a>
-
-                <a href="/Items/Delete?id=@item.Id"
-                   class="btn-delete"
-                   style="display: inline-block; padding: 8px 16px;
-                                  background-color: #dc3545; color: white; text-decoration: none;
-                                  border-radius: 4px; font-size: 14px;"
-                   onclick="return confirm('Вы уверены, что хотите удалить предмет &quot;@item.Name&quot;?');">
-                    Удалить
-                </a>
-            </div>
-        </div>
+        }
     }
+</div>
+
+<!-- Скрипт корзины -->
+@section Scripts {
+    <script>
+        // Обновление счётчика корзины
+        function updateBasketCount() {
+            const basket = JSON.parse(localStorage.getItem('basket') || '[]');
+            const count = basket.reduce((sum, i) => sum + (i.quantity || 1), 0);
+            const counter = document.getElementById('basket-count');
+            if (counter) {
+                counter.textContent = count;
+            }
+        }
+
+        // Добавление товара в корзину
+        function addToBasket(id, name, price) {
+            const item = {
+                id: id,
+                name: name,
+                price: parseInt(price, 10),
+                quantity: 1
+            };
+
+            let basket = JSON.parse(localStorage.getItem('basket') || '[]');
+            const existing = basket.find(i => i.id === item.id);
+
+            if (existing) {
+                existing.quantity += 1;
+            } else {
+                basket.push(item);
+            }
+
+            localStorage.setItem('basket', JSON.stringify(basket));
+            updateBasketCount();
+        }
+
+        // Инициализация при загрузке страницы
+        document.addEventListener('DOMContentLoaded', function() {
+            updateBasketCount();
+
+            // Навешиваем обработчики на кнопки "В корзину"
+            document.querySelectorAll('.basket').forEach(function(btn) {
+                btn.addEventListener('click', function() {
+                    const id = this.dataset.id;
+                    const name = this.dataset.name;
+                    const price = this.dataset.price;
+                    addToBasket(id, name, price);
+                });
+            });
+        });
+
+        // Фильтрация по категории
+        function SelectCategory(sender) {
+            window.location = '/Items/List?id=' + sender.value;
+        }
+    </script>
 }
