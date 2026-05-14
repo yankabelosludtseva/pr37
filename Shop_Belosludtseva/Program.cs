@@ -6,7 +6,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddMvc(option => option.EnableEndpointRouting = false);
 
 
-builder.Services.AddTransient<ICategorys, MockCaregories>();
+builder.Services.AddTransient<ICategorys, MockCategories>();
 builder.Services.AddTransient<IItems, MockItems>();
 
 var app = builder.Build();

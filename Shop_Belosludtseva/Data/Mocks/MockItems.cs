@@ -7,7 +7,7 @@ namespace Shop_Belosludtseva.Data.Mocks
 {
     public class MockItems : IItems
     {
-        public ICategorys _category = new MockCaregories();
+        public ICategorys _category = new MockCategories();
 
         public IEnumerable<Items> AllItems
         {
