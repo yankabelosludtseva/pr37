@@ -43,13 +43,20 @@
                 </div>
 
                 <div class="item-actions">
+                    <!-- Кнопка с классом basket и ID -->
                     <button type="button"
+                            id="@item.Id"
                             class="basket btn-basket"
                             data-id="@item.Id"
                             data-name="@item.Name"
                             data-price="@item.Price">
                         В корзину
                     </button>
+
+                    <!-- Элемент счётчика (изначально скрыт) -->
+                    <span class="count" style="display: none; color: #28a745; font-weight: bold;">
+                        ✓ Добавлено
+                    </span>
 
                     <a href="/Items/Update?id=@item.Id" class="btn-edit">
                         Изменить
@@ -68,6 +75,7 @@
 
 <!-- Скрипт корзины -->
 @section Scripts {
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         // Обновление счётчика корзины
         function updateBasketCount() {
@@ -79,7 +87,7 @@
             }
         }
 
-        // Добавление товара в корзину
+        // Добавление товара в корзину (localStorage)
         function addToBasket(id, name, price) {
             const item = {
                 id: id,
@@ -119,6 +127,43 @@
         // Фильтрация по категории
         function SelectCategory(sender) {
             window.location = '/Items/List?id=' + sender.value;
+        }
+
+        // При нажатии на кнопку, находящуюся в корзине, находящуюся в предмете
+        $(".item-card").children(".basket").click(function () {
+            // показываем элемент с классом count
+            $(this).parent().children(".count").show();
+            // скрываем кнопку
+            $(this).hide();
+            // вызываем AJAX
+            $.ajax({
+                // контроллер выполнения и метод вызываемый в нём
+                url: '@Url.Action("Basket", "Items")',
+                // тип данных которые отправляем
+                contentType: "application/json; charset=utf-8",
+                // передаём ID предмета
+                data: JSON.stringify({ idItem: $(this).attr('id') }),
+                // тип данных, ожидаемых от сервера.
+                dataType: "json",
+                // метод HTTP
+                type: "POST",
+                // Функция успешного выполнения
+                success: SuccessBasket,
+                // функция не успешного выполнения
+                error: AjaxError
+            });
+        });
+
+        // Функция успешного выполнения
+        function SuccessBasket(data) {
+            console.log(data);
+            // Обновляем общий счётчик корзины
+            updateBasketCount();
+        }
+
+        // Функция не успешного выполнения
+        function AjaxError() {
+            console.log("Ошибка выполнения ajax");
         }
     </script>
 }
