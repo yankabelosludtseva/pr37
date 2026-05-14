@@ -1,52 +1,55 @@
 ﻿using Shop_Belosludtseva.Data.Interfaces;
 using Shop_Belosludtseva.Data.Models;
-using System.Collections.Generic;
-using System.Linq;
 
-namespace Shop_Belosludtseva.Data.Mocks
+public class MockItems : IItems
 {
-    public class MockItems : IItems
+    private readonly ICategorys _categories;
+    private static int _nextId = 3;
+    private readonly List<Items> _items;
+
+    public MockItems(ICategorys categories)
     {
-        public ICategorys _category = new MockCategories();
-
-        public IEnumerable<Items> AllItems
+        _categories = categories;
+        _items = new List<Items>
         {
-            get
-            {
-                return new List<Items>()
-                {
-                    new Items()
-                    {
-                        Id = 0,
-                        Name = "DEXP MS-70",
-                        Description= "Благодаря черном корпусу блаблбалбалбла",
-                        Img = "https://www.dns-shop.ru/product/f0fd24cc14403332/mikrovolnovaa-pec-dexp-ms-70-cernyj/?utm_medium=organic&utm_source=google&utm_referrer=https%3A%2F%2Fwww.google.com%2F",
-                        Price = 3699,
-                        Category = _category.AllCategories.Where(x => x.Id == 0).First()
-                    },
+            new Items() { Id = 0, Name = "DEXP MS-70", Description = "Микроволновка 1", Img = "img1.jpg", Price = 3699, Category = _categories.AllCategories.FirstOrDefault(x => x.Id == 0) },
+            new Items() { Id = 1, Name = "DEXP MS-71", Description = "Микроволновка 2", Img = "img2.jpg", Price = 3799, Category = _categories.AllCategories.FirstOrDefault(x => x.Id == 1) },
+            new Items() { Id = 2, Name = "DEXP MS-72", Description = "Микроволновка 3", Img = "img3.jpg", Price = 3899, Category = _categories.AllCategories.FirstOrDefault(x => x.Id == 2) }
+        };
+    }
 
-                    new Items()
-                    {
-                        Id = 1,
-                        Name = "DEXP MS-71",
-                        Description= "Благодаря черном корпусу блаблбалбалбла",
-                        Img = "https://www.dns-shop.ru/product/f0fd24cc14403332/mikrovolnovaa-pec-dexp-ms-70-cernyj/?utm_medium=organic&utm_source=google&utm_referrer=https%3A%2F%2Fwww.google.com%2F",
-                        Price = 3799,
-                        Category = _category.AllCategories.Where(x => x.Id == 1).First()
-                    },
+    public IEnumerable<Items> AllItems => _items;
 
-                    new Items()
-                    {
-                        Id = 2,
-                        Name = "DEXP MS-72",
-                        Description= "Благодаря черном корпусу блаблбалбалбла",
-                        Img = "https://www.dns-shop.ru/product/f0fd24cc14403332/mikrovolnovaa-pec-dexp-ms-70-cernyj/?utm_medium=organic&utm_source=google&utm_referrer=https%3A%2F%2Fwww.google.com%2F",
-                        Price = 3899,
-                        Category = _category.AllCategories.Where(x => x.Id == 2).First()
-                    },
+    public Items GetItem(int itemId) => _items.FirstOrDefault(i => i.Id == itemId);
 
-                };
-            }
+    public int Add(Items item)
+    {
+        item.Id = _nextId++;
+        _items.Add(item);
+        return item.Id;
+    }
+
+    // ✅ Изменение предмета
+    public void Update(Items item)
+    {
+        var existingItem = _items.FirstOrDefault(i => i.Id == item.Id);
+        if (existingItem != null)
+        {
+            existingItem.Name = item.Name;
+            existingItem.Description = item.Description;
+            existingItem.Img = item.Img;
+            existingItem.Price = item.Price;
+            existingItem.Category = item.Category;
+        }
+    }
+
+    // ✅ Удаление предмета
+    public void Delete(int itemId)
+    {
+        var item = _items.FirstOrDefault(i => i.Id == itemId);
+        if (item != null)
+        {
+            _items.Remove(item);
         }
     }
 }
