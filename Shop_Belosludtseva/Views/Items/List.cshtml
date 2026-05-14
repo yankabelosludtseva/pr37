@@ -43,7 +43,7 @@
                 </div>
 
                 <div class="item-actions">
-                    <!-- Кнопка с классом basket и ID -->
+                    <!-- Кнопка "В корзину" с классом basket и ID -->
                     <button type="button"
                             id="@item.Id"
                             class="basket btn-basket"
@@ -53,9 +53,10 @@
                         В корзину
                     </button>
 
-                    <!-- Элемент счётчика (изначально скрыт) -->
-                    <span class="count" style="display: none; color: #28a745; font-weight: bold;">
-                        ✓ Добавлено
+                    <!-- Элемент счётчика с кнопкой "-" (изначально скрыт) -->
+                    <span class="count" style="display: none; color: #28a745; font-weight: bold; align-items: center; gap: 5px;">
+                        <button type="button" class="min" style="padding: 2px 8px; cursor: pointer;">-</button>
+                        <span class="text">1</span>
                     </span>
 
                     <a href="/Items/Update?id=@item.Id" class="btn-edit">
@@ -129,7 +130,9 @@
             window.location = '/Items/List?id=' + sender.value;
         }
 
-        // При нажатии на кнопку, находящуюся в корзине, находящуюся в предмете
+        // ==========================================
+        // Код для кнопки "+" (добавление)
+        // ==========================================
         $(".item-card").children(".basket").click(function () {
             // показываем элемент с классом count
             $(this).parent().children(".count").show();
@@ -143,6 +146,46 @@
                 contentType: "application/json; charset=utf-8",
                 // передаём ID предмета
                 data: JSON.stringify({ idItem: $(this).attr('id') }),
+                // тип данных, ожидаемых от сервера.
+                dataType: "json",
+                // метод HTTP
+                type: "POST",
+                // Функция успешного выполнения
+                success: SuccessBasket,
+                // функция не успешного выполнения
+                error: AjaxError
+            });
+        });
+
+        // ==========================================
+        // Код для кнопки "-" (уменьшение)
+        // ==========================================
+        $(".count").children(".min").click(function () {
+            // получаем ID оборудования
+            var idItem = $(this).parent().parent().children('.basket').attr('id');
+            // получаем кол-во
+            var count = $(this).parent().children(".text").text();
+            // уменьшаем кол-во
+            count--;
+            // если кол-во = 0
+            if (count == 0) {
+                // показываем кнопку
+                $(this).parent().parent().children('.basket').show();
+                // скрываем каунтер
+                $(this).parent().parent().children('.count').hide();
+            } else {
+                // изменяем текст
+                $(this).parent().children(".text").text(count);
+            }
+
+            // вызываем AJAX
+            $.ajax({
+                // контроллер выполнения и метод вызываемый в нём
+                url: '@Url.Action("BasketCount", "Items")',
+                // тип данных которые отправляем
+                contentType: "application/json; charset=utf-8",
+                // передаём ID предмета и кол-во
+                data: JSON.stringify({ idItem: idItem, count: count }),
                 // тип данных, ожидаемых от сервера.
                 dataType: "json",
                 // метод HTTP
