@@ -34,5 +34,34 @@ namespace Shop_Belosludtseva.Data.DataBase
                 return items;
             }
         }
+        public int Add(Items Item)
+        {
+            // открываем подключение к базе данных
+            MySqlConnection MySqlConnection = Connection.MySqlOpen();
+            // вставляем запись
+            Connection.MySqlQuery(
+                $"INSERT INTO `items` (`Name`, `Description`, `Img`, `Price`, `IdCategory`) VALUES ('{Item.Name}', '{Item.Description}', '{Item.Img}', {Item.Price}, {Item.Category.Id});",
+                MySqlConnection);
+            MySqlConnection.Close();
+
+            int IdItem = -1;
+            // выполняем второй запрос, для того чтобы получить ID
+            MySqlConnection = Connection.MySqlOpen();
+            // получаем Id записи обратно
+            MySqlDataReader MySqlDataReaderItem = Connection.MySqlQuery(
+                $"SELECT `Id` FROM `items` WHERE `Name` = '{Item.Name}' AND `Description` = '{Item.Description}' AND `Price` = {Item.Price} AND `IdCategory` = {Item.Category.Id};",
+                MySqlConnection);
+            // если есть что читать
+            if (MySqlDataReaderItem.HasRows)
+            {
+                // читаем
+                MySqlDataReaderItem.Read();
+                IdItem = MySqlDataReaderItem.GetInt32(0);
+            }
+            // закрываем соединение
+            MySqlConnection.Close();
+            // возвращаем результат
+            return IdItem;
+        }
     }
 }
