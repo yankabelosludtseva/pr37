@@ -1,35 +1,35 @@
 ﻿@using Shop_Belosludtseva.Data.Models
 @model IEnumerable<Categories>
 @{
-    Layout = "_Layout";
+	Layout = "_Layout";
 }
 <form method="post" enctype="multipart/form-data">
-    <div>
-        Наименование:
-        <br /><input name="name" placeholder="Наименование:" />
-    </div>
-    <div>
-        Описание:
-        <br /><input name="name" placeholder="Описание:" />
-    </div>
-    <div>
-        <label for="file">Изображение</label>
-        <br /><input name="files" type="file"/>
-    </div>
-    <div>
-        Стоимость:
-        <br /><input name="name" placeholder="Стоимость:" />
-    </div>
-    <div>
-
-        <br/><select name="idCategory">
-        @{
-            foreach (var Category in Model)
-            {
-                <option value="@Category.Id">@Category.Name</option>
-            }
-        }
-        </select>
-    </div>
-    <input type="submit"/>
+	<div>
+		Наименование:
+		<br /><input name="name" placeholder="Наименование:" />
+	</div>
+	<div>
+		Описание:
+		<br /><input name="description" placeholder="Описание:" />
+	</div>
+	<div>
+		<label for="file">Изображение</label>
+		<br /><input name="files" type="file" />
+	</div>
+	<div>
+		Стоимость:
+		<br /><input name="price" />
+	</div>
+	<div>
+		Категория:
+		<br /><select name="idCategory">
+			@{
+				foreach (var category in Model)
+				{
+					<option value="@category.Id">@category.Name</option>
+				}
+			}
+		</select>
+	</div>
+	<input type="submit" />
 </form>

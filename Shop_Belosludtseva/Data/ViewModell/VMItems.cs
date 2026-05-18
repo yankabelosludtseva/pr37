@@ -6,6 +6,6 @@ namespace Shop_Belosludtseva.Data.ViewModell
     {
         public IEnumerable<Items> Items { get; set; }
         public IEnumerable<Categories> Categories { get; set; }
-        public int SelectCategory { get; set; } = 0;  // исправлено: свойство
+        public int SelectCategory = 0;
     }
 }

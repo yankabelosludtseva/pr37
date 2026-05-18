@@ -12,50 +12,45 @@ namespace Shop_Belosludtseva.Controllers
 {
     public class ItemsController : Controller
     {
-        private readonly IItems _allItems;
-        private readonly ICategorys _allCategories;
-        private readonly IWebHostEnvironment _hostingEnvironment;
+        private readonly Microsoft.AspNetCore.Hosting.IHostingEnvironment hostingEnvironment;
+        private IItems IAllItems;
+        private ICategorys IAllCategories;
+        VMItems VMItems = new VMItems();
 
-        public ItemsController(IItems allItems, ICategorys allCategories, IWebHostEnvironment environment)
+        public ItemsController(IItems IAllItems, ICategorys IAllCategories, Microsoft.AspNetCore.Hosting.IHostingEnvironment environment)
         {
-            _allItems = allItems;
-            _allCategories = allCategories;
-            _hostingEnvironment = environment;
+            this.IAllItems = IAllItems;
+            this.IAllCategories = IAllCategories;
+            this.hostingEnvironment = environment;
         }
 
         public ViewResult List(int id = 0)
         {
             ViewBag.Title = "Страница с предметами";
 
-            var viewModel = new VMItems
-            {
-                Items = _allItems.AllItems,
-                Categories = _allCategories.AllCategories,
-                SelectCategory = id
-            };
-
-            return View(viewModel);
+            VMItems.Items = IAllItems.AllItems
+                .Where(i => id == 0 || i.Category.Id == id)
+                .ToList();
+            VMItems.Categories = IAllCategories.AllCategories;
+            VMItems.SelectCategory = id;
+            return View(VMItems);
         }
-
+        [HttpGet]
         public ViewResult Add()
         {
-            IEnumerable<Categories> categories = _allCategories.AllCategories;
-            return View(categories);
+            IEnumerable<Categories> Categories = IAllCategories.AllCategories;
+            return View(Categories);
         }
-
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Add(string name, string description, IFormFile files, int price, int idCategory)
+        public RedirectResult Add(string name, string description, IFormFile files, float price, int idCategory)
         {
             string fileName = null;
 
-            if (files != null && files.Length > 0)
+            if (files != null)
             {
-                fileName = Guid.NewGuid().ToString() + Path.GetExtension(files.FileName);
-                var uploads = Path.Combine(_hostingEnvironment.WebRootPath, "img");
+                var uploads = Path.Combine(hostingEnvironment.WebRootPath, "img");
 
-                if (!Directory.Exists(uploads))
-                    Directory.CreateDirectory(uploads);
+                fileName = Guid.NewGuid().ToString() + Path.GetExtension(files.FileName);
 
                 var filePath = Path.Combine(uploads, fileName);
 
@@ -65,101 +60,64 @@ namespace Shop_Belosludtseva.Controllers
                 }
             }
 
-            var newItem = new Items
-            {
-                Name = name,
-                Description = description,
-                Img = fileName,  // ✅ Безопасно: будет null, если файл не загружен
-                Price = price,
-                Category = new Categories { Id = idCategory }
-            };
+            Items newItems = new Items();
+            newItems.Name = name;
+            newItems.Description = description;
+            newItems.Img = "/img/" + fileName;
+            newItems.Price = Convert.ToInt32(price);
+            newItems.Category = new Categories() { Id = idCategory };
 
-            int id = _allItems.Add(newItem);
-            return RedirectToAction(nameof(Update), new { id = id });
+            int id = IAllItems.Add(newItems);
+            return Redirect("/Items/List");
         }
-
-        // ✅ ИЗМЕНЕНО: ViewResult → IActionResult
-        public IActionResult Update(int id)
+        [HttpGet]
+        public ViewResult Update(int id)
         {
-            var item = _allItems.GetItem(id);
-            if (item == null)
-                return NotFound();  // ✅ Теперь работает, т.к. IActionResult поддерживает NotFoundResult
-
-            ViewBag.Categories = _allCategories.AllCategories;
+            ViewBag.Title = "Обновление товара";
+            var item = IAllItems.GetItem(id);
+            ViewBag.Categories = IAllCategories.AllCategories;
             return View(item);
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
-        public IActionResult Update(Items item, IFormFile files)
+        public IActionResult Update(Items item, IFormFile? newImage)
         {
-            if (ModelState.IsValid)
+            if (newImage != null)
             {
-                if (files != null && files.Length > 0)
+                var oldItem = IAllItems.GetItem(item.Id);
+                if (oldItem != null && !string.IsNullOrEmpty(oldItem.Img))
                 {
-                    var fileName = Guid.NewGuid().ToString() + Path.GetExtension(files.FileName);
-                    var uploads = Path.Combine(_hostingEnvironment.WebRootPath, "img");
-
-                    if (!Directory.Exists(uploads))
-                        Directory.CreateDirectory(uploads);
-
-                    var filePath = Path.Combine(uploads, fileName);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    var oldFilePath = Path.Combine(hostingEnvironment.WebRootPath, oldItem.Img.TrimStart('/'));
+                    if (System.IO.File.Exists(oldFilePath))
                     {
-                        files.CopyTo(stream);
-                    }
-
-                    item.Img = fileName;
-                }
-                else
-                {
-                    var existingItem = _allItems.GetItem(item.Id);
-                    if (existingItem != null)
-                    {
-                        item.Img = existingItem.Img;
+                        System.IO.File.Delete(oldFilePath);
                     }
                 }
+                var uploads = Path.Combine(hostingEnvironment.WebRootPath, "img");
+                var fileName = Guid.NewGuid().ToString() + Path.GetExtension(newImage.FileName);
+                var filePath = Path.Combine(uploads, fileName);
 
-                _allItems.Update(item);
-                return RedirectToAction(nameof(List));
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    newImage.CopyTo(stream);
+                }
+
+                item.Img = "/img/" + fileName;
+            }
+            else
+            {
+                var oldItem = IAllItems.GetItem(item.Id);
+                item.Img = oldItem?.Img;
             }
 
-            ViewBag.Categories = _allCategories.AllCategories;
-            return View(item);
+            IAllItems.Update(item);
+            return Redirect("/Items/List");
         }
-
-        // ✅ ИЗМЕНЕНО: ViewResult → IActionResult
+        [HttpPost]
         public IActionResult Delete(int id)
         {
-            var item = _allItems.GetItem(id);
-            if (item == null)
-                return NotFound();  // ✅ Теперь работает
-
-            return View(item);
-        }
-
-        [HttpPost]
-        [ValidateAntiForgeryToken]
-        [ActionName("Delete")]
-        public IActionResult DeleteConfirmed(int id)
-        {
-            var item = _allItems.GetItem(id);
-            if (item != null)
-            {
-                if (!string.IsNullOrEmpty(item.Img))
-                {
-                    var filePath = Path.Combine(_hostingEnvironment.WebRootPath, "img", item.Img);
-                    if (System.IO.File.Exists(filePath))
-                    {
-                        System.IO.File.Delete(filePath);
-                    }
-                }
-
-                _allItems.Delete(id);
-            }
-
-            return RedirectToAction(nameof(List));
+            IAllItems.Delete(id);
+            return Redirect("/Items/List");
         }
     }
 }

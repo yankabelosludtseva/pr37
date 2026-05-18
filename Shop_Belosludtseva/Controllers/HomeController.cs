@@ -6,7 +6,7 @@ namespace Shop_Belosludtseva.Controllers
     {
         public RedirectResult Index()
         {
-            return Redirect("/Items/List");
+            return Redirect("Items/List");
         }
     }
 }

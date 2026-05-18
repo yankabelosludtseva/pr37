@@ -1,63 +1,69 @@
 ﻿@model Shop_Belosludtseva.Data.Models.Items
 
 @{
-    ViewBag.Title = "Редактирование предмета";
+    Layout = "_Layout";
 }
 
-<h2>Редактирование предмета</h2>
+<h2>Обновление товара</h2>
 
-<form asp-action="Update" method="post" enctype="multipart/form-data">
-    <input type="hidden" asp-for="Id" />
+<form method="post" enctype="multipart/form-data" action="/Items/Update">
+    <input type="hidden" name="Id" value="@Model.Id" />
+    <input type="hidden" name="Img" value="@Model.Img" />
 
-    <div class="form-group">
-        <label asp-for="Name">Название:</label>
-        <input asp-for="Name" class="form-control" />
-        <span asp-validation-for="Name" class="text-danger"></span>
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Название:</label>
+        <input type="text" name="Name" value="@Model.Name" required
+               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
     </div>
 
-    <div class="form-group">
-        <label asp-for="Description">Описание:</label>
-        <textarea asp-for="Description" class="form-control"></textarea>
-        <span asp-validation-for="Description" class="text-danger"></span>
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Описание:</label>
+        <textarea name="Description" required
+                  style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px; height: 100px;">@Model.Description</textarea>
     </div>
 
-    <div class="form-group">
-        <label asp-for="Price">Цена:</label>
-        <input asp-for="Price" type="number" step="0.01" class="form-control" />
-        <span asp-validation-for="Price" class="text-danger"></span>
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Цена:</label>
+        <input type="number" name="Price" value="@Model.Price" step="1" required
+               style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;" />
     </div>
 
-    <div class="form-group">
-        <label>Категория:</label>
-        <select name="idCategory" class="form-control">
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Категория:</label>
+        <select name="Category.Id" required style="width: 100%; padding: 8px; border: 1px solid #ddd; border-radius: 4px;">
             @foreach (var category in ViewBag.Categories)
             {
-                <option value="@category.Id" selected="@(category.Id == Model.Category?.Id)">
-                    @category.Name
-                </option>
+                if (category.Id == Model.Category.Id)
+                {
+                    <option value="@category.Id" selected>@category.Name</option>
+                }
+                else
+                {
+                    <option value="@category.Id">@category.Name</option>
+                }
             }
         </select>
     </div>
 
-    <div class="form-group">
-        <label>Текущее изображение:</label><br />
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Текущее изображение:</label>
         @if (!string.IsNullOrEmpty(Model.Img))
         {
-            <img src="~/img/@Model.Img" alt="@Model.Name" style="max-width: 200px;" />
+            <img src="@Url.Content(Model.Img)" style="width: 100px; border: 1px solid #ddd; padding: 5px;" alt="@Model.Name" />
+        }
+        else
+        {
+            <span style="color: #999;">Нет изображения</span>
         }
     </div>
 
-    <div class="form-group">
-        <label>Загрузить новое изображение:</label>
-        <input type="file" name="files" class="form-control" />
+    <div style="margin-bottom: 15px;">
+        <label style="display: block; margin-bottom: 5px;">Новое изображение (необязательно):</label>
+        <input type="file" name="newImage" accept="image/*" />
     </div>
 
-    <button type="submit" class="btn btn-primary">Сохранить изменения</button>
-    <a asp-action="List" class="btn btn-secondary">Отмена</a>
+    <div style="margin-top: 20px;">
+        <button type="submit" style="background: #007EFF; color: white; padding: 10px 20px; border: none; border-radius: 4px; cursor: pointer;">Обновить</button>
+        <a href="/Items/List" style="margin-left: 10px; color: #007EFF; text-decoration: none;">Отмена</a>
+    </div>
 </form>
-
-@section Scripts {
-    @{
-        await Html.RenderPartialAsync("_ValidationScriptsPartial");
-    }
-}

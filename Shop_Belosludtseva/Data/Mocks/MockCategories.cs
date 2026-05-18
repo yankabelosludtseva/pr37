@@ -4,17 +4,27 @@ using System.Collections.Generic;
 
 namespace Shop_Belosludtseva.Data.Mocks
 {
-    public class MockCategories : ICategorys
+    public class MockCaregories : ICategorys
     {
         public IEnumerable<Categories> AllCategories
         {
             get
             {
-                return new List<Categories>()
+                return new List<Categories>
                 {
-                    new Categories { Id = 0, Name = "Микроволновые печи", Description = "Бытовая техника" },
-                    new Categories { Id = 1, Name = "Холодильники", Description = "Бытовая техника" },
-                    new Categories { Id = 2, Name = "Электрочайники", Description = "Мелкая бытовая техника" }
+                    new Categories()
+                    {
+                        Id = 0,
+                        Name = "Микроволновые печи",
+                        Description = "Микроволновая печь - электроприбор для нагрева еды"
+                    },
+
+                    new Categories()
+                    {
+                        Id = 1,
+                        Name = "Мультиварка",
+                        Description = "Мультиварка готовит еду"
+                    }
                 };
             }
         }

@@ -3,11 +3,16 @@
 <html>
 <head>
     <meta name="viewport" content="width=device-width" />
-    <link rel="stylesheet" href="~/Style.css" />
+    <link rel="stylesheet" href="~/css/StyleSheet.css" />
     <title>@ViewBag.Title</title>
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.6.1/jquery.min.js"></script>
 </head>
 <body>
+    <div class="header">
+        <img src="~/img/icon.png" />
+        <input class="search" placeholder="Поиск по сайту" />
+        <img class="basket" src="~/img/ic_basket.png" />
+    </div>
     <div>
         @RenderBody()
     </div>
